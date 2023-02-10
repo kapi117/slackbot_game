@@ -45,11 +45,15 @@ def message_im(payload, say, client):
     # Get the channel
     channel = payload["channel"]
 
+    thread_ts = None
+    if "thread_ts" in payload:
+        thread_ts = payload["thread_ts"]
+
     # Check if the message is a DM
     if channel[0] == "D":
         # Send the message
         slack_utils.send_ephemeral_message(
-            "Hey <@"+user+">", channel, user, client)
+            "Hey <@"+user+">", channel, user, client, thread_ts=thread_ts)
 
 
 # Start the app

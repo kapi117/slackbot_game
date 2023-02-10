@@ -14,22 +14,26 @@ from typing import List
 import datetime
 
 
-def send_message(message: str, channels: List[str], client: WebClient):
+def send_message(message: str, channels: List[str], client: WebClient, thread_ts: List[str] = None):
     """
         Sends a message to a Slack channels.
 
         Parameters:
             - message: The message to send.
             - channels: The channels or users to send the message to.
+            - thread_ts: The threads to send the message to.
 
         Example:
             send_message("Hello!", ["#general", "@kacper"], app.client)
     """
-    for channel in channels:
-        client.chat_postMessage(channel=channel, text=message)
+    if thread_ts is None or len(thread_ts) != len(channels):
+        thread_ts = [None]*len(channels)
+    for channel, thread in zip(channels, thread_ts):
+        client.chat_postMessage(
+            channel=channel, text=message, thread_ts=thread)
 
 
-def send_ephemeral_message(message: str, channel: str, user: str, client: WebClient):
+def send_ephemeral_message(message: str, channel: str, user: str, client: WebClient, thread_ts: str = None):
     """
         Sends an ephemeral message to a Slack user.
 
@@ -37,14 +41,16 @@ def send_ephemeral_message(message: str, channel: str, user: str, client: WebCli
             - message: The message to send.
             - channel: The channel to send the message to.
             - user: The user to send the message to.
+            - thread_ts: The thread to send the message to.
 
         Example:
             send_ephemeral_message("Hello!", "#general", "U12312311", app.client)
     """
-    client.chat_postEphemeral(channel=channel, text=message, user=user)
+    client.chat_postEphemeral(
+        channel=channel, text=message, user=user, thread_ts=thread_ts)
 
 
-def send_scheduled_message(message: str, channel: str, time: datetime, client: WebClient):
+def send_scheduled_message(message: str, channel: str, time: datetime, client: WebClient, thread_ts: str = None):
     """
         Sends a scheduled message to a Slack channel.
 
@@ -52,12 +58,13 @@ def send_scheduled_message(message: str, channel: str, time: datetime, client: W
             - message: The message to send.
             - channel: The channel to send the message to.
             - time: The time to send the message at.
+            - thread_ts: The thread to send the message to.
 
         Example:
             send_scheduled_message("Hello!", "#general", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
     """
     client.chat_scheduleMessage(
-        channel=channel, text=message, post_at=time.timestamp())
+        channel=channel, text=message, post_at=time.timestamp(), thread_ts=thread_ts)
 
 
 def get_channel_users(channel: str, client: WebClient):
