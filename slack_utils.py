@@ -7,6 +7,8 @@
         - send_scheduled_message: Sends a scheduled message to a Slack channel.
         - get_channel_users: Gets the users in a channel.
         - send_message_to_everyone_in_channel: Sends a message to everyone in a channel.
+        - schedule_message_to_everyone_in_channel: Schedules a message to everyone in a channel.
+        - get_parent_message: Gets the parent message of a thread.
 """
 
 from slack_sdk import WebClient
@@ -21,7 +23,7 @@ def send_message(message: str, channels: List[str], client: WebClient, thread_ts
         Parameters:
             - message: The message to send.
             - channels: The channels or users to send the message to.
-            - thread_ts: The threads to send the message to.
+            - thread_ts: The threads to send the message to (can be given ts - then replies in thread to not thread message).
 
         Example:
             send_message("Hello!", ["#general", "@kacper"], app.client)
@@ -114,3 +116,21 @@ def schedule_message_to_everyone_in_channel(message: str, channel: str, time: da
     users = get_channel_users(channel, client)
     for user in users:
         send_scheduled_message(message, user, time, client)
+
+
+def get_parent_message(channel: str, ts: str, client: WebClient):
+    """
+        Gets the parent message of a thread.
+
+        Parameters:
+            - channel: The channel the message is in.
+            - ts: The timestamp of the message.
+
+        Returns:
+            - The parent message.
+
+        Example:
+            get_parent_message("C04P6595G5S", "1624941795.000200", app.client)
+    """
+    payload = client.conversations_replies(channel=channel, ts=ts)
+    return payload['messages'][0]
