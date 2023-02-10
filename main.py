@@ -28,9 +28,32 @@ handler = SocketModeHandler(app, os.environ.get("APP_TOKEN"))
 # Constants
 ASGARD_CHANNEL = "C04P6595G5S"
 
+# Events
+
+
+@app.event("message")
+def message_im(payload, say, client):
+    """
+        Handles a direct message to the bot.
+    """
+    # Get the message
+    message = payload["text"]
+
+    # Get the user that sent the message
+    user = payload["user"]
+
+    # Get the channel
+    channel = payload["channel"]
+
+    # Check if the message is a DM
+    if channel[0] == "D":
+        # Send the message
+        slack_utils.send_ephemeral_message(
+            "Hey <@"+user+">", channel, user, client)
+
+
 # Start the app
 if __name__ == "__main__":
-    # handler.start()
-    slack_utils.schedule_message_to_everyone_in_channel("Hello!", ASGARD_CHANNEL, datetime.datetime.combine(
-        datetime.date.today(), datetime.time(hour=22, minute=14)), app.client)
+    handler.start()
+
     pass
