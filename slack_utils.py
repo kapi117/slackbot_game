@@ -8,6 +8,7 @@
 
 from slack_sdk import WebClient
 from typing import List
+import datetime
 
 
 def send_message(message: str, channels: List[str], client: WebClient):
@@ -35,3 +36,17 @@ def send_ephemeral_message(message: str, channel: str, user: str, client: WebCli
             - user: The user to send the message to.
     """
     client.chat_postEphemeral(channel=channel, text=message, user=user)
+
+
+def send_scheduled_message(message: str, channel: str, time: datetime, client: WebClient):
+    """
+        Sends a scheduled message to a Slack channel.
+
+        Parameters:
+            - message: The message to send.
+            - channel: The channel to send the message to.
+            - time: The time to send the message at.
+    """
+    payload = client.chat_scheduleMessage(
+        channel=channel, text=message, post_at=time.timestamp())
+    print(payload)
