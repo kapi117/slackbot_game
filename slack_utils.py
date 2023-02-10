@@ -34,6 +34,9 @@ def send_ephemeral_message(message: str, channel: str, user: str, client: WebCli
             - message: The message to send.
             - channel: The channel to send the message to.
             - user: The user to send the message to.
+
+        Example:
+            send_ephemeral_message("Hello!", "#general", "U12312311", app.client)
     """
     client.chat_postEphemeral(channel=channel, text=message, user=user)
 
@@ -46,6 +49,9 @@ def send_scheduled_message(message: str, channel: str, time: datetime, client: W
             - message: The message to send.
             - channel: The channel to send the message to.
             - time: The time to send the message at.
+
+        Example:
+            send_scheduled_message("Hello!", "#general", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
     """
     payload = client.chat_scheduleMessage(
         channel=channel, text=message, post_at=time.timestamp())

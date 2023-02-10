@@ -28,11 +28,5 @@ handler = SocketModeHandler(app, os.environ.get("APP_TOKEN"))
 # Start the app
 if __name__ == "__main__":
     # handler.start()
-    # slack_utils.send_message("Witajcie w Asgardzie!", [
-    #                          "@kacper.iwi"], app.client)
 
-    slack_utils.send_ephemeral_message(
-        "Witajcie w Asgardzie!", "#asgard", "U03AECYM5MZ", app.client)
-
-    slack_utils.send_scheduled_message(
-        "Witajcie w Asgardzie!", "#asgard", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
+    pass
