@@ -31,6 +31,6 @@ ASGARD_CHANNEL = "C04P6595G5S"
 # Start the app
 if __name__ == "__main__":
     # handler.start()
-    slack_utils.send_message_to_everyone_in_channel(
-        "Hello!", ASGARD_CHANNEL, app.client)
+    slack_utils.schedule_message_to_everyone_in_channel("Hello!", ASGARD_CHANNEL, datetime.datetime.combine(
+        datetime.date.today(), datetime.time(hour=22, minute=14)), app.client)
     pass

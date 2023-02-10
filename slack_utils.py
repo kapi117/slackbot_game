@@ -5,6 +5,8 @@
         - send_message: Sends a message to a Slack channel.
         - send_ephemeral_message: Sends an ephemeral message (disappearing one) to a Slack user.
         - send_scheduled_message: Sends a scheduled message to a Slack channel.
+        - get_channel_users: Gets the users in a channel.
+        - send_message_to_everyone_in_channel: Sends a message to everyone in a channel.
 """
 
 from slack_sdk import WebClient
@@ -54,9 +56,8 @@ def send_scheduled_message(message: str, channel: str, time: datetime, client: W
         Example:
             send_scheduled_message("Hello!", "#general", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
     """
-    payload = client.chat_scheduleMessage(
+    client.chat_scheduleMessage(
         channel=channel, text=message, post_at=time.timestamp())
-    print(payload)
 
 
 def get_channel_users(channel: str, client: WebClient):
@@ -89,3 +90,20 @@ def send_message_to_everyone_in_channel(message: str, channel: str, client: WebC
     """
     users = get_channel_users(channel, client)
     send_message(message, users, client)
+
+
+def schedule_message_to_everyone_in_channel(message: str, channel: str, time: datetime, client: WebClient):
+    """
+        Sends a message to everyone in a channel.
+
+        Parameters:
+            - message: The message to send.
+            - channel: The channel to send the message to.
+            - time: The time to send the message at.
+
+        Example:
+            send_message_to_everyone_in_channel("Hello!", "C04P6595G5S", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
+    """
+    users = get_channel_users(channel, client)
+    for user in users:
+        send_scheduled_message(message, user, time, client)
