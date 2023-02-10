@@ -4,6 +4,7 @@
     Functions:
         - send_message: Sends a message to a Slack channel.
         - send_ephemeral_message: Sends an ephemeral message (disappearing one) to a Slack user.
+        - send_scheduled_message: Sends a scheduled message to a Slack channel.
 """
 
 from slack_sdk import WebClient
@@ -56,3 +57,35 @@ def send_scheduled_message(message: str, channel: str, time: datetime, client: W
     payload = client.chat_scheduleMessage(
         channel=channel, text=message, post_at=time.timestamp())
     print(payload)
+
+
+def get_channel_users(channel: str, client: WebClient):
+    """
+        Gets the users in a channel.
+
+        Parameters:
+            - channel: The channel to get the users from.
+
+        Returns:
+            - A list of the users in the channel.
+
+        Example:
+            get_channel_users("C04P6595G5S", app.client)
+    """
+    payload = client.conversations_members(channel=channel)
+    return payload['members']
+
+
+def send_message_to_everyone_in_channel(message: str, channel: str, client: WebClient):
+    """
+        Sends a message to everyone in a channel.
+
+        Parameters:
+            - message: The message to send.
+            - channel: The channel to send the message to.
+
+        Example:
+            send_message_to_everyone_in_channel("Hello!", "C04P6595G5S", app.client)
+    """
+    users = get_channel_users(channel, client)
+    send_message(message, users, client)

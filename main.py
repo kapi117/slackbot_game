@@ -25,8 +25,12 @@ app = App(token=os.environ.get("BOT_TOKEN"))
 # Socket mode handler
 handler = SocketModeHandler(app, os.environ.get("APP_TOKEN"))
 
+# Constants
+ASGARD_CHANNEL = "C04P6595G5S"
+
 # Start the app
 if __name__ == "__main__":
     # handler.start()
-
+    slack_utils.send_message_to_everyone_in_channel(
+        "Hello!", ASGARD_CHANNEL, app.client)
     pass
