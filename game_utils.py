@@ -1,9 +1,10 @@
 """
     This module containts the Player class, which is used to store the information about the users in the game.
 """
+from enum import Enum
 import os
 import pickle
-from typing import Dict, Set, List, Optional
+from typing import Any, Dict, Set, List, Optional
 from datetime import datetime
 
 import slack
@@ -292,6 +293,13 @@ class Player:
         return f"{self.user_id} - {self.points} points - {self.completed_tasks} completed tasks - {self.wrong_answers} wrong answers - {self.standings} standings"
 
 
+class MessageType(Enum):
+    RIGHT_ANSWER = 1
+    WRONG_ANSWER = 2
+    OUTER_MESSAGE = 3
+    ADMIN_MESSAGE = 4
+
+
 class Game:
     """
         This class is used to store the information about the game.
@@ -376,3 +384,72 @@ class Game:
         self.tasks = {}
         self.players = {}
         self.needed_task = {}
+
+    def set_client(self, client: slack.WebClient):
+        """
+            Sets the client.
+
+            Parameters:
+                - client: The client.
+        """
+        self.client = client
+
+    def add_player(self, user_id: str):
+        """
+            Adds a player to the game.
+
+            Parameters:
+                - user_id: The id of the player.
+        """
+        if user_id not in self.players:
+            self.players[user_id] = Player(user_id)
+
+    def show_players(self) -> str:
+        """
+            Shows the players.
+
+            Returns:
+                The players.
+        """
+        return ',\n '.join([str(player) for player in self.players.values()])
+
+    def add_task(self, task: Task):
+        """
+            Adds a task to the game.
+
+            Parameters:
+                - task: The task.
+        """
+        if task.task_no not in self.tasks:
+            self.tasks[task.task_no] = task
+
+    def edit_task(self, task_no: int, **kwargs: Dict[str, Any]):
+        """
+            Edits a task.
+
+            Parameters:
+                - task_no: The number of the task.
+                - task: The task.
+        """
+        if task_no in self.tasks:
+            self.tasks[task_no].edit_task(self.client, **kwargs)
+
+    def delete_task(self, task_no: int):
+        """
+            Deletes a task.
+
+            Parameters:
+                - task_no: The number of the task.
+        """
+        if task_no in self.tasks:
+            del self.tasks[task_no]
+            # TODO: check how to imlement deleting scheduled tasks, add it as destructor
+
+    def show_tasks(self) -> str:
+        """
+            Shows the tasks.
+
+            Returns:
+                The tasks.
+        """
+        return ',\n '.join([str(task) for task in self.tasks.values()])
