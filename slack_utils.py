@@ -65,7 +65,7 @@ def send_scheduled_message(message: str, channel: str, time: datetime.datetime, 
         Example:
             send_scheduled_message("Hello!", "#general", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
     """
-    client.chat_scheduleMessage(
+    return client.chat_scheduleMessage(
         channel=channel, text=message, post_at=time.timestamp(), thread_ts=thread_ts)
 
 
@@ -114,8 +114,10 @@ def schedule_message_to_everyone_in_channel(message: str, channel: str, time: da
             send_message_to_everyone_in_channel("Hello!", "C04P6595G5S", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
     """
     users = get_channel_users(channel, client)
+    messages = []
     for user in users:
-        send_scheduled_message(message, user, time, client)
+        messages.append(send_scheduled_message(message, user, time, client))
+    return messages
 
 
 def get_parent_message(channel: str, ts: str, client: WebClient) -> str:
@@ -151,3 +153,6 @@ def get_user_name(user_id: str, client: WebClient) -> str:
     """
     payload = client.users_info(user=user_id)
     return payload['user']['name']
+
+# TODO Implement update_message
+# TODO Implement delete_message
