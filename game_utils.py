@@ -237,5 +237,44 @@ class Player:
             - user_id: The user ID of the user.
             - points: The number of points the user has.
             - completed_tasks: The number of tasks the user has completed.
-
+            - standings: The standings of the user.
+            - wrong_answers: The number of wrong answers the user has.
     """
+
+    def __init__(self, user_id: str):
+        """
+            The constructor.
+
+            Parameters:
+                - user_id: The user ID of the user.
+        """
+        self.user_id = user_id
+        self.points = 0
+        self.completed_tasks = set()
+        self.standings = {}
+        self.wrong_answers = {}
+
+    def right_answer(self, task: Task):
+        """
+            Updates the user's information after he/she answered correctly.
+
+            Parameters:
+                - task: The task.
+        """
+        if task.task_no not in self.completed_tasks:
+            self.points += task.points
+            self.completed_tasks.add(task.task_no)
+            task.solved_by += 1
+            self.standings[task.task_no] = task.solved_by
+
+    def wrong_answer(self, task: Task):
+        """
+            Updates the user's information after he/she answered incorrectly.
+
+            Parameters:
+                - task: The task.
+        """
+        if task.task_no not in self.wrong_answers:
+            self.wrong_answers[task.task_no] = 1
+        else:
+            self.wrong_answers[task.task_no] += 1
