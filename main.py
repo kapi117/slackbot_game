@@ -268,7 +268,7 @@ def send_message_submission(body, client, ack):
     """
     # Acknowledge the request
     ack()
-    print(body)
+    logging.debug("[SEND_MSG] Received submission: " + str(body))
 
     # Get the user
     user = body["user"]["id"]
@@ -283,11 +283,14 @@ def send_message_submission(body, client, ack):
     message = body["view"]["state"]["values"][BLOCK_MESSAGE_ID][SELECTED_MESSAGE_ID]["value"]
 
     # Send the message
-    slack_utils.send_scheduled_message(message, channels, date, client)
+    for channel in channels:
+        mess = slack_utils.send_scheduled_message(
+            message, channel, datetime.datetime.fromtimestamp(date), client)
+        logging.debug("[SEND_MSG] Scheduled message: " + message +
+                      " to " + channel + " at " + str(date))
+        logging.debug("[SEND_MSG] Message data: " + str(mess))
 
 
 # Start the app
 if __name__ == "__main__":
     handler.start()
-
-    pass

@@ -34,7 +34,7 @@
 				"initial_conversations": [
 					"C04P6595G5S"
 				]
-			}
+			},
             "block_id": "channel_to_send"
 		},
 		{
