@@ -63,6 +63,18 @@ SELECTED_DATE_ID = "select_date"
 BLOCK_MESSAGE_ID = "message_to_send"
 SELECTED_MESSAGE_ID = "select_message"
 
+BLOCK_TASK_TYPE_ID = "type_of_task"
+SELECTED_TASK_TYPE_ID = "select_type"
+
+BLOCK_TASK_POINTS_ID = "points_for_task"
+SELECTED_TASK_POINTS_ID = "select_points"
+
+BLOCK_CORRECT_ANSWER_ID = "correct_answer"
+SELECTED_CORRECT_ANSWER_ID = "select_correct_answer"
+
+BLOCK_CASE_SENSITIVE_ID = "case_sensitive"
+SELECTED_CASE_SENSITIVE_ID = "select_case_sensitive"
+
 
 def open_modal(modal_id, trigger_id, client):
     """
@@ -289,6 +301,44 @@ def send_message_submission(body, client, ack):
         logging.debug("[SEND_MSG] Scheduled message: " + message +
                       " to " + channel + " at " + str(date))
         logging.debug("[SEND_MSG] Message data: " + str(mess))
+
+
+@app.view(ADD_TASK_ID)
+def add_task_submission(body, client, ack):
+    """
+        Handles the submission of the add task modal
+    """
+    # Acknowledge the request
+    ack()
+    logging.debug("[ADD_TASK] Received submission: " + str(body))
+
+    # Get the user
+    user = body["user"]["id"]
+
+    # Get the channel
+    channels = body["view"]["state"]["values"][BLOCK_CHANNEL_ID][SELECTED_CHANNEL_ID]["selected_conversations"]
+
+    # Get the date
+    date = body["view"]["state"]["values"][BLOCK_DATE_ID][SELECTED_DATE_ID]["selected_date_time"]
+
+    # Get the message
+    message = body["view"]["state"]["values"][BLOCK_MESSAGE_ID][SELECTED_MESSAGE_ID]["value"]
+
+    # Get the task type
+    task_type = body["view"]["state"]["values"][BLOCK_TASK_TYPE_ID][SELECTED_TASK_TYPE_ID]["selected_option"]["value"]
+
+    # Get the task points
+    task_points = body["view"]["state"]["values"][BLOCK_TASK_POINTS_ID][SELECTED_TASK_POINTS_ID]["value"]
+
+    # Get the case sensitive
+    case_sensitive = len(body["view"]["state"]["values"][BLOCK_CASE_SENSITIVE_ID]
+                         [SELECTED_CASE_SENSITIVE_ID]["selected_options"]) > 0
+
+    # Get correct answers
+    correct_answers = body["view"]["state"]["values"][BLOCK_CORRECT_ANSWER_ID][SELECTED_CORRECT_ANSWER_ID]["value"]
+
+    logging.debug("[ADD_TASK] Extracted data: " + str(channels) + " " + str(date) + " " + message +
+                  " " + task_type + " " + task_points + " " + str(case_sensitive) + " " + correct_answers)
 
 
 # Start the app
