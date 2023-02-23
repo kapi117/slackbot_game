@@ -278,3 +278,12 @@ class Player:
             self.wrong_answers[task.task_no] = 1
         else:
             self.wrong_answers[task.task_no] += 1
+
+    def __str__(self) -> str:
+        """
+            Returns the string representation of the player.
+
+            Returns:
+                The string representation of the player.
+        """
+        return f"{self.user_id} - {self.points} points - {self.completed_tasks} completed tasks - {self.wrong_answers} wrong answers - {self.standings} standings"
