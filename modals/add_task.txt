@@ -10,6 +10,7 @@
 		"emoji": true
 	},
 	"type": "modal",
+	"callback_id": "add_task_modal",
 	"close": {
 		"type": "plain_text",
 		"text": "Cancel",
@@ -25,6 +26,7 @@
 		},
 		{
 			"type": "input",
+			"block_id": "type_of_task",
 			"element": {
 				"type": "radio_buttons",
 				"options": [
@@ -34,7 +36,7 @@
 							"text": "DM",
 							"emoji": true
 						},
-						"value": "value-0"
+						"value": "dm"
 					},
 					{
 						"text": {
@@ -42,10 +44,10 @@
 							"text": "kanał",
 							"emoji": true
 						},
-						"value": "value-1"
+						"value": "channel"
 					}
 				],
-				"action_id": "radio_buttons-action"
+				"action_id": "select_type"
 			},
 			"label": {
 				"type": "plain_text",
@@ -66,44 +68,48 @@
 					"text": "Select conversations",
 					"emoji": true
 				},
-				"action_id": "multi_conversations_select-action",
+				"action_id": "select_channel",
 				"initial_conversations": [
 					"C04P6595G5S"
 				]
-			}
+			},
+            "block_id": "channel_to_send"
 		},
 		{
 			"type": "input",
 			"element": {
 				"type": "datetimepicker",
-				"action_id": "datetimepicker-action"
+				"action_id": "select_date"
 			},
 			"label": {
 				"type": "plain_text",
 				"text": "Wybierz czas wstawienia zadania",
 				"emoji": true
-			}
+			},
+            "block_id": "date_planned"
 		},
 		{
 			"type": "input",
 			"element": {
 				"type": "plain_text_input",
 				"multiline": true,
-				"action_id": "plain_text_input-action"
+				"action_id": "select_message"
 			},
 			"label": {
 				"type": "plain_text",
 				"text": "Treść zadania (zostanie przetworzona przed wysłaniem)",
 				"emoji": true
-			}
+			},
+			"block_id": "message_to_send"
 		},
 		{
 			"type": "input",
+			"block_id": "correct_answer",
 			"optional": true,
 			"element": {
 				"type": "plain_text_input",
 				"multiline": true,
-				"action_id": "plain_text_input-action"
+				"action_id": "select_correct_answer"
 			},
 			"label": {
 				"type": "plain_text",
@@ -114,6 +120,7 @@
 		{
 			"type": "input",
 			"optional": true,
+			"block_id": "case_sensitive",
 			"element": {
 				"type": "checkboxes",
 				"options": [
@@ -123,10 +130,10 @@
 							"text": "Tak",
 							"emoji": true
 						},
-						"value": "value-0"
+						"value": "true"
 					}
 				],
-				"action_id": "checkboxes-action"
+				"action_id": "select_case_sensitive"
 			},
 			"label": {
 				"type": "plain_text",
@@ -136,14 +143,30 @@
 		},
 		{
 			"type": "input",
+			"block_id": "points_for_task",
 			"element": {
 				"type": "number_input",
 				"is_decimal_allowed": false,
-				"action_id": "number_input-action"
+				"action_id": "select_points"
 			},
 			"label": {
 				"type": "plain_text",
 				"text": "Ilość punktów za zadanie",
+				"emoji": true
+			}
+		},
+		{
+			"type": "input",
+			"optional": true,
+			"block_id": "needed_task",
+			"element": {
+				"type": "number_input",
+				"is_decimal_allowed": false,
+				"action_id": "select_needed_task"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "ID potrzebnego taska",
 				"emoji": true
 			}
 		}

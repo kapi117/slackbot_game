@@ -75,6 +75,9 @@ SELECTED_CORRECT_ANSWER_ID = "select_correct_answer"
 BLOCK_CASE_SENSITIVE_ID = "case_sensitive"
 SELECTED_CASE_SENSITIVE_ID = "select_case_sensitive"
 
+BLOCK_NEEDED_TASK_ID = "needed_task"
+SELECTED_NEEDED_TASK_ID = "select_needed_task"
+
 
 def open_modal(modal_id, trigger_id, client):
     """
@@ -337,8 +340,15 @@ def add_task_submission(body, client, ack):
     # Get correct answers
     correct_answers = body["view"]["state"]["values"][BLOCK_CORRECT_ANSWER_ID][SELECTED_CORRECT_ANSWER_ID]["value"]
 
+    # Get needed task
+    needed_task = body["view"]["state"]["values"][BLOCK_NEEDED_TASK_ID][SELECTED_NEEDED_TASK_ID]["value"]
+
     logging.debug("[ADD_TASK] Extracted data: " + str(channels) + " " + str(date) + " " + message +
-                  " " + task_type + " " + task_points + " " + str(case_sensitive) + " " + correct_answers)
+                  " " + task_type + " " + task_points + " " + str(case_sensitive) + " " + correct_answers + " " + str(needed_task))
+
+    # TODO create task and add it to the game and send it
+    task = game_utils.Task(task_no=len(game.tasks), is_dm=(task_type == "dm"), points=task_points,
+                           case_sensitive=case_sensitive, correct_answers=correct_answers, message=message)
 
 
 # Start the app
