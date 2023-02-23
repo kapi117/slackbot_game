@@ -4,6 +4,7 @@
 from enum import Enum
 import os
 import pickle
+import random
 from typing import Any, Dict, Set, List, Optional
 from datetime import datetime
 
@@ -453,3 +454,35 @@ class Game:
                 The tasks.
         """
         return ',\n '.join([str(task) for task in self.tasks.values()])
+
+    def handle_message(self, message: str, user_id: str, channel: str, task_no: Optional[int] = None):
+        """
+            Handles the message.
+
+            Parameters:
+                - message: The message.
+                - user_id: The id of the user.
+                - task_no: The number of the task.
+                - channel: The channel.
+        """
+        if task_no is None:
+            slack_utils.send_message(self.RANDOM_QUOTES[random.randint(
+                0, len(self.RANDOM_QUOTES)-1)], [channel], self.client)
+            return MessageType.OUTER_MESSAGE
+        elif task_no not in self.tasks:
+            slack_utils.send_message("Nie ma takiego zadania.", [
+                                     channel], self.client)
+            return MessageType.OUTER_MESSAGE
+        else:
+            if self.tasks[task_no].check_answer(message):
+                self.players[user_id].right_answer(self.tasks[task_no])
+                slack_utils.send_message(self.RIGHT_ANSWER_MESSAGES[random.randint(
+                    0, len(self.RIGHT_ANSWER_MESSAGES)-1)], [channel], self.client)
+                if task_no in self.needed_task:
+                    self.needed_task[task_no].send_task(user_id, self.client)
+                return MessageType.RIGHT_ANSWER
+            else:
+                self.players[user_id].wrong_answer(self.tasks[task_no])
+                slack_utils.send_message(self.WRONG_ANSWER_MESSAGES[random.randint(
+                    0, len(self.WRONG_ANSWER_MESSAGES)-1)], [channel], self.client)
+                return MessageType.WRONG_ANSWER
