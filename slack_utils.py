@@ -154,5 +154,31 @@ def get_user_name(user_id: str, client: WebClient) -> str:
     payload = client.users_info(user=user_id)
     return payload['user']['name']
 
-# TODO Implement update_message
-# TODO Implement delete_message
+
+def update_message(channel: str, ts: str, message: str, client: WebClient):
+    """
+        Updates a message.
+
+        Parameters:
+            - channel: The channel the message is in.
+            - ts: The timestamp of the message.
+            - message: The new message.
+
+        Example:
+            update_message("C04P6595G5S", "1624941795.000200", "Hello!", app.client)
+    """
+    return client.chat_update(channel=channel, ts=ts, text=message)
+
+
+def delete_message(channel: str, ts: str, client: WebClient):
+    """
+        Deletes a message.
+
+        Parameters:
+            - channel: The channel the message is in.
+            - ts: The timestamp of the message.
+
+        Example:
+            delete_message("C04P6595G5S", "1624941795.000200", app.client)
+    """
+    return client.chat_delete(channel=channel, ts=ts)
