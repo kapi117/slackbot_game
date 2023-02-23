@@ -11,12 +11,12 @@
         - get_parent_message: Gets the parent message of a thread.
 """
 
-from slack_sdk import WebClient
-from typing import List
+from slack_sdk.web.client import WebClient
+from typing import List, Optional
 import datetime
 
 
-def send_message(message: str, channels: List[str], client: WebClient, thread_ts: List[str] = None):
+def send_message(message: str, channels: List[str], client: WebClient, thread_ts: Optional[List[str]] = None):
     """
         Sends a message to a Slack channels.
 
@@ -35,7 +35,7 @@ def send_message(message: str, channels: List[str], client: WebClient, thread_ts
             channel=channel, text=message, thread_ts=thread)
 
 
-def send_ephemeral_message(message: str, channel: str, user: str, client: WebClient, thread_ts: str = None):
+def send_ephemeral_message(message: str, channel: str, user: str, client: WebClient, thread_ts: Optional[str] = None):
     """
         Sends an ephemeral message to a Slack user.
 
@@ -48,11 +48,11 @@ def send_ephemeral_message(message: str, channel: str, user: str, client: WebCli
         Example:
             send_ephemeral_message("Hello!", "#general", "U12312311", app.client)
     """
-    client.chat_postEphemeral(
+    return client.chat_postEphemeral(
         channel=channel, text=message, user=user, thread_ts=thread_ts)
 
 
-def send_scheduled_message(message: str, channel: str, time: datetime, client: WebClient, thread_ts: str = None):
+def send_scheduled_message(message: str, channel: str, time: datetime.datetime, client: WebClient, thread_ts: Optional[str] = None):
     """
         Sends a scheduled message to a Slack channel.
 
@@ -69,7 +69,7 @@ def send_scheduled_message(message: str, channel: str, time: datetime, client: W
         channel=channel, text=message, post_at=time.timestamp(), thread_ts=thread_ts)
 
 
-def get_channel_users(channel: str, client: WebClient):
+def get_channel_users(channel: str, client: WebClient) -> List[str]:
     """
         Gets the users in a channel.
 
@@ -118,7 +118,7 @@ def schedule_message_to_everyone_in_channel(message: str, channel: str, time: da
         send_scheduled_message(message, user, time, client)
 
 
-def get_parent_message(channel: str, ts: str, client: WebClient):
+def get_parent_message(channel: str, ts: str, client: WebClient) -> str:
     """
         Gets the parent message of a thread.
 
@@ -134,3 +134,20 @@ def get_parent_message(channel: str, ts: str, client: WebClient):
     """
     payload = client.conversations_replies(channel=channel, ts=ts)
     return payload['messages'][0]
+
+
+def get_user_name(user_id: str, client: WebClient) -> str:
+    """
+        Gets the name of a user.
+
+        Parameters:
+            - user_id: The ID of the user.
+
+        Returns:
+            - The name of the user.
+
+        Example:
+            get_user_name("U123123123", app.client)
+    """
+    payload = client.users_info(user=user_id)
+    return payload['user']['name']
