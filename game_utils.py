@@ -1,6 +1,8 @@
 """
     This module containts the Player class, which is used to store the information about the users in the game.
 """
+import os
+import pickle
 from typing import Dict, Set, List, Optional
 from datetime import datetime
 
@@ -141,6 +143,7 @@ class Task:
             Returns:
                 The task.
         """
+        # TODO create task from modal
         pass
 
     def update_message(self, client: slack.WebClient):
@@ -226,7 +229,7 @@ class Task:
             Returns:
                 The string representation of the task.
         """
-        return f"Task {self.task_no} - {self.points} points - {self.description}"
+        return f"Task {self.task_no} - {self.points} points - {self.description} - {self.correct_answers} - {self.needed_task} - {self.is_dm} - {self.channel} - {self.date_and_time} - {self.solved_by} - {self.sent_messages}"
 
 
 class Player:
@@ -287,3 +290,89 @@ class Player:
                 The string representation of the player.
         """
         return f"{self.user_id} - {self.points} points - {self.completed_tasks} completed tasks - {self.wrong_answers} wrong answers - {self.standings} standings"
+
+
+class Game:
+    """
+        This class is used to store the information about the game.
+
+        Attributes:
+            - tasks: The tasks of the game.
+            - players: The players of the game.
+            - needed_task: Maps the task number that is needed to be completed before a task can be completed.
+            - RANDOM_QUOTES: Random quotes to send to the users.
+            - CORRECT_ANSWER_MESSAGES: Messages to send to the users when they answer correctly.
+            - WRONG_ANSWER_MESSAGES: Messages to send to the users when they answer incorrectly.
+    """
+
+    RANDOM_QUOTES = ["Wiesz, że moja siostra Hel rządzi krainą zmarłych? To niezbyt przyjemne miejsce, ale czasem trzeba tam zajrzeć.",    "Powiedziano, że moje oko, które oddałem w ofierze, jest ukryte na dnie studni Mimir. Kto wie, co może zrobić z takim darem?",    "Czy wiesz, że kiedyś prawie pokonałem samego Hrymira w grze w hnefatafl? To była prawdziwa walka.",    "Mój ulubiony wojownik, Starkad, zabił swoją żonę, swojego ojca i swojego najlepszego przyjaciela. To dopiero był wojownik.",    "Każdego ranka wołami przed moim pałacem prowadzi Freyja, bogini miłości. Ale to tylko jedna z jej wielu ról.",
+                     "Słyszałeś o wojowniku, który zabił smoka i zjadł jego serce? Tak, Fafnir to był kawał mężczyzny.",    "Gdy byłem młodym wojownikiem, kiedyś zabiłem giganta Ymira i z jego ciała stworzyliśmy świat.",    "Czy wiesz, że jeden z moich synów, Balder, był niemalże nieśmiertelny, ale zginął trafiony strzałą z jemioły? To była wielka strata.",    "Miałem niezwykłe doświadczenie, kiedy skradłem z drzewa wiedzy jeden z jabłek Idun, które dają wieczną młodość. To naprawdę działa!",    "Jeśli kiedykolwiek spotkasz wojownika zwanego berserkerem, uważaj, bo to są moi najlepsi wojownicy i są w stanie osiągnąć niemalże nieludzkie siły i zdolności bojowe."]
+
+    CORRECT_ANSWER_MESSAGES = [
+        "Twoja mądrość jest godna szacunku, człowieku.",
+        "Wiesz więcej niż inni o mitologii nordyckiej, ludzie potrafią się od Ciebie wiele nauczyć.",
+        "Właśnie tak, wiedza o bogach zasługuje na pochwałę, cieszę się, że jej nie brakuje u Ciebie.",
+        "Czuję, że powinieneś zostać jednym z moich berserków, twoja mądrość nie ma sobie równych.",
+        "Brawo, wiedza, którą posiadasz, jest godna chwały i powinna być przekazywana kolejnym pokoleniom.",
+        "Twoja mądrość przypomina mi o jednym z moich najlepszych wojowników, Broði. Jesteś godzien mojego szacunku.",
+        "Twoja odpowiedź jest jak łuk skandynawski - mocna i celna. Bogowie powinni być zadowoleni z takiego wyboru.",
+        "Zgadzam się z tobą, twoja mądrość przypomina mi o dwóch moich najlepszych wojownikach, Vagni i Haki.",
+        "Twoja wiedza o nordyckich mitach jest jak moja broń - niezawodna i potężna.",
+        "Twoja odpowiedź jest godna miejsca w Valhalli, zasłużyłeś na niej swoim wysiłkiem i mądrością."
+    ]
+
+    WRONG_ANSWER_MESSAGES = [
+        "Twoja odpowiedź jest jak marny łuk, niecelna i bez wartości.",
+        "Czuję, że powinieneś jeszcze wiele się nauczyć o nordyckich bogach.",
+        "Twoja odpowiedź jest fałszywa, bądź ostrożny, by nie oburzyć bogów.",
+        "Twoja mądrość przypomina mi o jednym z moich słabszych wojowników.",
+        "Twoja odpowiedź jest jak piwo bez alkoholu - bez smaku i bez mocy.",
+        "Twoja wiedza o nordyckich mitach jest słaba jak powiew wiatru.",
+        "Czuje, że twoja odpowiedź jest wynikiem niezbyt zbyt głębokiej refleksji nad tematem.",
+        "Twoja odpowiedź jest jak mój młot, ale bez magii i bez celu.",
+        "Twoja wiedza o nordyckich mitach przypomina mi o człowieku, który zagubił się w mroku i nie wie, gdzie się znajduje.",
+        "Twoja odpowiedź jest godna potępienia, uważaj, by nie zasłużyć na gniew bogów."
+    ]
+
+    @staticmethod
+    def load_from_pickle(file_name: str) -> 'Game':
+        """
+            Loads the game from a pickle file.
+
+            Parameters:
+                - file_name: The name of the file.
+
+            Returns:
+                The game.
+        """
+        # If the file does not exist, create a new game and save it to the file.
+        if not os.path.exists(file_name):
+            game = Game()
+            game.save_to_pickle(file_name)
+            return game
+
+        with open(file_name, 'rb') as f:
+            return pickle.load(f)
+
+    def save_to_pickle(self, file_name: str):
+        """
+            Saves the game to a pickle file.
+
+            Parameters:
+                - file_name: The name of the file.
+        """
+        # If the file already exists, rename it (make backup).
+        if os.path.exists(file_name):
+            os.rename(file_name, file_name +
+                      datetime.now().strftime("HH_MM_SS") + '.bak')
+
+        with open(file_name, 'wb') as f:
+            pickle.dump(self, f)
+
+    def __init__(self):
+        """
+            The constructor.
+        """
+        self.tasks = {}
+        self.players = {}
+        self.needed_task = {}
