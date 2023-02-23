@@ -1,0 +1,68 @@
+{
+	"title": {
+		"type": "plain_text",
+		"text": "Wyślij wiadomość",
+		"emoji": true
+	},
+	"submit": {
+		"type": "plain_text",
+		"text": "Submit",
+		"emoji": true
+	},
+	"type": "modal",
+    "callback_id": "send_message_modal",
+	"close": {
+		"type": "plain_text",
+		"text": "Cancel",
+		"emoji": true
+	},
+	"blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Gdzie chcesz wysłać wiadomość?"
+			},
+			"accessory": {
+				"type": "multi_conversations_select",
+				"placeholder": {
+					"type": "plain_text",
+					"text": "Select conversations",
+					"emoji": true
+				},
+				"action_id": "select_channel",
+				"initial_conversations": [
+					"C04P6595G5S"
+				]
+			}
+            "block_id": "channel_to_send"
+		},
+		{
+			"type": "input",
+			"element": {
+				"type": "plain_text_input",
+				"multiline": true,
+				"action_id": "select_message"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "Treść wiadomości (formtowanie zostanie dodane przed wysłaniem)",
+				"emoji": true
+			},
+            "block_id": "message_to_send"
+		},
+		{
+			"type": "input",
+			"element": {
+				"type": "datetimepicker",
+				"action_id": "select_date"
+			},
+			"label": {
+				"type": "plain_text",
+				"text": "Kiedy mam wysłać wiadomość?",
+				"emoji": true
+			},
+            "block_id": "date_planned"
+		}
+	]
+}

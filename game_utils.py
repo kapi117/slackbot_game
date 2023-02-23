@@ -8,7 +8,7 @@ import random
 from typing import Any, Dict, Set, List, Optional
 from datetime import datetime
 
-import slack
+from slack_sdk.web.client import WebClient
 import slack_utils
 
 '''
@@ -148,7 +148,7 @@ class Task:
         # TODO create task from modal
         pass
 
-    def update_message(self, client: slack.WebClient):
+    def update_message(self, client: WebClient):
         """
             Updates the message.
 
@@ -158,7 +158,7 @@ class Task:
         for message in self.sent_messages:
             slack_utils.update_message(message, self.description, client)
 
-    def delete_message(self, client: slack.WebClient):
+    def delete_message(self, client: WebClient):
         """
             Deletes the message.
 
@@ -168,7 +168,7 @@ class Task:
         for message in self.sent_messages:
             slack_utils.delete_message(message, client)
 
-    def schedule_task(self, client: slack.WebClient):
+    def schedule_task(self, client: WebClient):
         """
             Schedules the task.
         """
@@ -185,7 +185,7 @@ class Task:
                                                                            self.channel, self.date_and_time, client)
             self.sent_messages = messages
 
-    def send_task(self, user_id: str, client: slack.WebClient):
+    def send_task(self, user_id: str, client: WebClient):
         """
             Sends the task to the users.
 
@@ -373,7 +373,7 @@ class Game:
         # If the file already exists, rename it (make backup).
         if os.path.exists(file_name):
             os.rename(file_name, file_name +
-                      datetime.now().strftime("HH_MM_SS") + '.bak')
+                      datetime.now().strftime("%d_%m_%y__%H_%M_%S") + '.bak')
 
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
@@ -386,7 +386,7 @@ class Game:
         self.players = {}
         self.needed_task = {}
 
-    def set_client(self, client: slack.WebClient):
+    def set_client(self, client: WebClient):
         """
             Sets the client.
 

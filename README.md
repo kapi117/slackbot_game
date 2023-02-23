@@ -25,7 +25,7 @@ As a part of internal EESTEC game, aimed to give fun, learn new things and make 
    - users:read
    - users:write
 5. Go to _Socket Mode_ and enable it
-6. Go to _App Home_ and set nice _Default Name_, tick _Allow users to send Slash commands and messages from the messages tab_
+6. Go to _App Home_ and set nice _Default Name_, tick _Allow users to send Slash commands and messages from the messages tab_, enable _Home Tab_
 7. Go to _Incoming Webhooks_ and enable it, then click _Add New Webhook to Workspace_
 8. If channel you want to post in via webhook is not created, create one and choose it
 9. Go to _Event Subscriptions_ and enable it
@@ -35,6 +35,7 @@ As a part of internal EESTEC game, aimed to give fun, learn new things and make 
     - member_joined_channel
     - reaction_added
     - message.channels
+    - app_home_opened
 11. Go to _Basic Information_ and customize _Display Information_
 12. Go to _Install App_ and install the app to your workspace
 13. Create a file called `.env` in the root directory of the project

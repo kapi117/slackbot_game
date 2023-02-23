@@ -1,0 +1,80 @@
+{
+	"type": "home",
+	"blocks": [
+		{
+			"type": "header",
+			"text": {
+				"type": "plain_text",
+				"text": "Witaj mistrzu!",
+				"emoji": true
+			}
+		},
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "With great power comes great responsibility"
+			}
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Dodaj task",
+						"emoji": true
+					},
+					"value": "add_task_modal",
+					"action_id": "app_home_buttons"
+				}
+			]
+		},
+        {
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Opublikuj wiadomość",
+						"emoji": true
+					},
+					"value": "send_message_modal",
+					"action_id": "app_home_buttons"
+				}
+			]
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Pokaż taski",
+						"emoji": true
+					},
+					"value": "show_tasks",
+					"action_id": "app_home_buttons"
+				}
+			]
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Pokaż graczy",
+						"emoji": true
+					},
+					"value": "show_players",
+					"action_id": "app_home_buttons"
+				}
+			]
+		}
+	]
+}
