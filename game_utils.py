@@ -199,12 +199,13 @@ class Task:
             Parameters:
                 - user_id: The user ID of the user.
         """
+        metadata_task = {"event_type": f"{self.task_no}",
+                         "event_payload": {"task_no": f"{self.task_no}"}}
         logging.info(f"[TASK] Sending task {self.task_no} to {user_id}.")
-        if len(self.sent_messages) < 1:
-            mess = slack_utils.send_message(
-                self.description, [user_id], client)
-            self.sent_messages.append(mess)
-            logging.info(f"[TASK] Task {self.task_no} sent to {user_id}.")
+        mess = slack_utils.send_message(
+            self.description, [user_id], client, metadata=metadata_task)
+        self.sent_messages.append(mess)
+        logging.info(f"[TASK] Task {self.task_no} sent to {user_id}.")
 
     def edit_task(self, client, **kwargs):
         """
@@ -508,7 +509,7 @@ class Game:
                                      channel], self.client, thread_ts=[thread_ts])
             logging.info('Wrong task number')
             return MessageType.OUTER_MESSAGE
-        else:
+        elif task_no not in self.players[user_id].completed_tasks:
             if self.tasks[task_no].check_answer(message):
                 logging.info('Right answer')
                 self.players[user_id].right_answer(self.tasks[task_no])
@@ -525,6 +526,11 @@ class Game:
                 slack_utils.send_message(self.WRONG_ANSWER_MESSAGES[random.randint(
                     0, len(self.WRONG_ANSWER_MESSAGES)-1)], [channel], self.client, thread_ts=[thread_ts])
                 return MessageType.WRONG_ANSWER
+        else:
+            slack_utils.send_message("Na brodę Odyna dzielny wojowniku, już wykonałeś to zadanie.", [
+                                     channel], self.client, thread_ts=[thread_ts])
+            logging.info('Task already completed')
+            return MessageType.OUTER_MESSAGE
 
     def generate_tasks_view(self) -> str:
         view = '''{
