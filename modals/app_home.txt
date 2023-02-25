@@ -56,7 +56,7 @@
 						"text": "Pokaż taski",
 						"emoji": true
 					},
-					"value": "show_tasks",
+					"value": "show_tasks_modal",
 					"action_id": "app_home_buttons"
 				}
 			]
@@ -71,7 +71,7 @@
 						"text": "Pokaż graczy",
 						"emoji": true
 					},
-					"value": "show_players",
+					"value": "show_players_modal",
 					"action_id": "app_home_buttons"
 				}
 			]

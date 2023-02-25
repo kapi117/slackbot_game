@@ -10,6 +10,7 @@ from datetime import datetime
 
 from slack_sdk.web.client import WebClient
 import slack_utils
+import logging
 
 '''
 @startuml
@@ -110,7 +111,7 @@ class Task:
             - check_answer: Checks if the answer is correct.
     """
 
-    def __init__(self, task_no: int, points: int, correct_answers: List[str], needed_task: Optional[int] = None, is_dm: bool = False, channel: str = None, date_and_time: datetime = None, description: str = None, do_letters_case_matter: bool = False):
+    def __init__(self, task_no: int, points: int, correct_answers: Optional[List[str]], needed_task: Optional[int] = None, is_dm: bool = False, channel: str = None, date_and_time: datetime = None, description: str = None, do_letters_case_matter: bool = False):
         """
             The constructor.
 
@@ -136,6 +137,7 @@ class Task:
         self.do_letters_case_matter = do_letters_case_matter
         self.solved_by = 0
         self.sent_messages = []
+        logging.info(f"[TASK] Task {self.task_no} created.")
 
     @staticmethod
     def create_task_from_modal() -> 'Task':
@@ -145,7 +147,7 @@ class Task:
             Returns:
                 The task.
         """
-        # TODO create task from modal
+
         pass
 
     def update_message(self, client: WebClient):
@@ -168,7 +170,7 @@ class Task:
         for message in self.sent_messages:
             slack_utils.delete_message(message, client)
 
-    def schedule_task(self, client: WebClient):
+    def schedule_task(self, client: WebClient, player_ids: List[str]):
         """
             Schedules the task.
         """
@@ -176,14 +178,19 @@ class Task:
             # TODO delete scheduled messages
             pass
 
+        metadata_task = {"event_type": f"{self.task_no}",
+                         "event_payload": {"task_no": f"{self.task_no}"}}
         if not self.is_dm:
             mess = slack_utils.send_scheduled_message(self.description,
-                                                      self.channel, self.date_and_time, client)
+                                                      self.channel, self.date_and_time, client, metadata=metadata_task)
             self.sent_messages.append(mess)
         else:
-            messages = slack_utils.schedule_message_to_everyone_in_channel(self.description,
-                                                                           self.channel, self.date_and_time, client)
+            messages = []
+            for player_id in player_ids:
+                messages.append(slack_utils.send_scheduled_message(self.description,
+                                                                   player_id, self.date_and_time, client, metadata=metadata_task))
             self.sent_messages = messages
+        logging.info(f"[TASK] Task {self.task_no} scheduled.")
 
     def send_task(self, user_id: str, client: WebClient):
         """
@@ -192,10 +199,12 @@ class Task:
             Parameters:
                 - user_id: The user ID of the user.
         """
+        logging.info(f"[TASK] Sending task {self.task_no} to {user_id}.")
         if len(self.sent_messages) < 1:
             mess = slack_utils.send_message(
                 self.description, [user_id], client)
             self.sent_messages.append(mess)
+            logging.info(f"[TASK] Task {self.task_no} sent to {user_id}.")
 
     def edit_task(self, client, **kwargs):
         """
@@ -219,6 +228,8 @@ class Task:
             Returns:
                 True if the answer is correct, False otherwise.
         """
+        logging.info(
+            f"[TASK] Checking answer {answer} for task {self.task_no}.")
         if self.do_letters_case_matter:
             return answer in self.correct_answers
         else:
@@ -231,7 +242,7 @@ class Task:
             Returns:
                 The string representation of the task.
         """
-        return f"Task {self.task_no} - {self.points} points - {self.description} - {self.correct_answers} - {self.needed_task} - {self.is_dm} - {self.channel} - {self.date_and_time} - {self.solved_by} - {self.sent_messages}"
+        return f" Task {self.task_no} \n {self.points} points \n Description: {self.description} \n Correct answers: {self.correct_answers} \n Needed task: {self.needed_task} \n Is DM: {self.is_dm} \n Channel: {self.channel} \n Date and time: {self.date_and_time} \n Solved by: {self.solved_by}"
 
 
 class Player:
@@ -258,6 +269,7 @@ class Player:
         self.completed_tasks = set()
         self.standings = {}
         self.wrong_answers = {}
+        logging.info(f"[PLAYER] Player {self.user_id} created.")
 
     def right_answer(self, task: Task):
         """
@@ -267,10 +279,12 @@ class Player:
                 - task: The task.
         """
         if task.task_no not in self.completed_tasks:
-            self.points += task.points
+            self.points += int(task.points)
             self.completed_tasks.add(task.task_no)
             task.solved_by += 1
             self.standings[task.task_no] = task.solved_by
+            logging.info(
+                f"[PLAYER] Player {self.user_id} answered correctly to task {task.task_no}.")
 
     def wrong_answer(self, task: Task):
         """
@@ -283,6 +297,8 @@ class Player:
             self.wrong_answers[task.task_no] = 1
         else:
             self.wrong_answers[task.task_no] += 1
+        logging.info(
+            f"[PLAYER] Player {self.user_id} answered incorrectly to task {task.task_no}.")
 
     def __str__(self) -> str:
         """
@@ -355,7 +371,9 @@ class Game:
                 The game.
         """
         # If the file does not exist, create a new game and save it to the file.
+        logging.info('Game loading from file: ' + file_name)
         if not os.path.exists(file_name):
+            logging.info('File does not exist, creating new game.')
             game = Game()
             game.save_to_pickle(file_name)
             return game
@@ -377,6 +395,8 @@ class Game:
 
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)
+
+        logging.info('Game saved to file: ' + file_name)
 
     def __init__(self):
         """
@@ -404,6 +424,7 @@ class Game:
         """
         if user_id not in self.players:
             self.players[user_id] = Player(user_id)
+        logging.info('Player added: ' + user_id)
 
     def show_players(self) -> str:
         """
@@ -423,6 +444,11 @@ class Game:
         """
         if task.task_no not in self.tasks:
             self.tasks[task.task_no] = task
+            if task.needed_task is not None:
+                logging.info('Task ' + str(task.task_no) +
+                             ' needs task ' + str(task.needed_task))
+                self.needed_task[task.needed_task] = task.task_no
+        logging.info('Task added: ' + str(task))
 
     def edit_task(self, task_no: int, **kwargs: Dict[str, Any]):
         """
@@ -455,7 +481,14 @@ class Game:
         """
         return ',\n '.join([str(task) for task in self.tasks.values()])
 
-    def handle_message(self, message: str, user_id: str, channel: str, task_no: Optional[int] = None):
+    def complete_task_of_player(self, user_id: str, task_no: int):
+        self.players[user_id].right_answer(self.tasks[task_no])
+        if task_no in self.needed_task:
+            self.tasks[self.needed_task[task_no]
+                       ].send_task(user_id, self.client)
+        logging.info('Task completed: ' + str(task_no) + ' by ' + str(user_id))
+
+    def handle_message(self, message: str, user_id: str, channel: str, task_no: Optional[int] = None, thread_ts: Optional[str] = None):
         """
             Handles the message.
 
@@ -467,22 +500,73 @@ class Game:
         """
         if task_no is None:
             slack_utils.send_message(self.RANDOM_QUOTES[random.randint(
-                0, len(self.RANDOM_QUOTES)-1)], [channel], self.client)
+                0, len(self.RANDOM_QUOTES)-1)], [channel], self.client, thread_ts=[thread_ts])
+            logging.info('Random quote sent to OUTER MESSAGE.')
             return MessageType.OUTER_MESSAGE
         elif task_no not in self.tasks:
             slack_utils.send_message("Nie ma takiego zadania.", [
-                                     channel], self.client)
+                                     channel], self.client, thread_ts=[thread_ts])
+            logging.info('Wrong task number')
             return MessageType.OUTER_MESSAGE
         else:
             if self.tasks[task_no].check_answer(message):
+                logging.info('Right answer')
                 self.players[user_id].right_answer(self.tasks[task_no])
-                slack_utils.send_message(self.RIGHT_ANSWER_MESSAGES[random.randint(
-                    0, len(self.RIGHT_ANSWER_MESSAGES)-1)], [channel], self.client)
+                slack_utils.send_message(self.CORRECT_ANSWER_MESSAGES[random.randint(
+                    0, len(self.CORRECT_ANSWER_MESSAGES)-1)], [channel], self.client, thread_ts=[thread_ts])
                 if task_no in self.needed_task:
-                    self.needed_task[task_no].send_task(user_id, self.client)
+                    logging.info('Sending needed task')
+                    self.tasks[self.needed_task[task_no]
+                               ].send_task(user_id, self.client)
                 return MessageType.RIGHT_ANSWER
             else:
+                logging.info('Wrong answer')
                 self.players[user_id].wrong_answer(self.tasks[task_no])
                 slack_utils.send_message(self.WRONG_ANSWER_MESSAGES[random.randint(
-                    0, len(self.WRONG_ANSWER_MESSAGES)-1)], [channel], self.client)
+                    0, len(self.WRONG_ANSWER_MESSAGES)-1)], [channel], self.client, thread_ts=[thread_ts])
                 return MessageType.WRONG_ANSWER
+
+    def generate_tasks_view(self) -> str:
+        view = '''{
+            "title": {
+                "type": "plain_text",
+                "text": "Podsumowanie zadanek",
+                "emoji": true
+            },
+            "type": "modal",
+            "close": {
+                "type": "plain_text",
+                "text": "Zamknij",
+                "emoji": true
+            },
+            "blocks": [
+                '''
+        first = True
+        for task_no, task in self.tasks.items():
+            if not first:
+                view += '''
+                    ,{
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "''' + str(task) + '''"
+                            }
+                        ]
+                    }
+                '''
+            else:
+                first = False
+                view += '''
+                    {
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "''' + str(task) + '''"
+                            }
+                        ]
+                    }
+                '''
+        view += "]}"
+        return view

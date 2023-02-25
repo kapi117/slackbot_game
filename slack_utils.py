@@ -16,7 +16,7 @@ from typing import List, Optional
 import datetime
 
 
-def send_message(message: str, channels: List[str], client: WebClient, thread_ts: Optional[List[str]] = None):
+def send_message(message: str, channels: List[str], client: WebClient, thread_ts: Optional[List[str]] = None, metadata: object = None):
     """
         Sends a message to a Slack channels.
 
@@ -32,7 +32,7 @@ def send_message(message: str, channels: List[str], client: WebClient, thread_ts
         thread_ts = [None]*len(channels)
     for channel, thread in zip(channels, thread_ts):
         client.chat_postMessage(
-            channel=channel, text=message, thread_ts=thread)
+            channel=channel, text=message, thread_ts=thread, metadata=metadata)
 
 
 def send_ephemeral_message(message: str, channel: str, user: str, client: WebClient, thread_ts: Optional[str] = None):
@@ -52,7 +52,7 @@ def send_ephemeral_message(message: str, channel: str, user: str, client: WebCli
         channel=channel, text=message, user=user, thread_ts=thread_ts)
 
 
-def send_scheduled_message(message: str, channel: str, time: datetime.datetime, client: WebClient, thread_ts: Optional[str] = None):
+def send_scheduled_message(message: str, channel: str, time: datetime.datetime, client: WebClient, thread_ts: Optional[str] = None, metadata: object = None):
     """
         Sends a scheduled message to a Slack channel.
 
@@ -66,7 +66,7 @@ def send_scheduled_message(message: str, channel: str, time: datetime.datetime, 
             send_scheduled_message("Hello!", "#general", datetime.datetime.combine(datetime.date.today(), datetime.time(hour=21, minute=31)), app.client)
     """
     return client.chat_scheduleMessage(
-        channel=channel, text=message, post_at=time.timestamp(), thread_ts=thread_ts)
+        channel=channel, text=message, post_at=time.timestamp(), thread_ts=thread_ts, metadata=metadata)
 
 
 def get_channel_users(channel: str, client: WebClient) -> List[str]:
@@ -86,7 +86,7 @@ def get_channel_users(channel: str, client: WebClient) -> List[str]:
     return payload['members']
 
 
-def send_message_to_everyone_in_channel(message: str, channel: str, client: WebClient):
+def send_message_to_everyone_in_channel(message: str, channel: str, client: WebClient, metadata: object = None):
     """
         Sends a message to everyone in a channel.
 
@@ -101,7 +101,7 @@ def send_message_to_everyone_in_channel(message: str, channel: str, client: WebC
     send_message(message, users, client)
 
 
-def schedule_message_to_everyone_in_channel(message: str, channel: str, time: datetime, client: WebClient):
+def schedule_message_to_everyone_in_channel(message: str, channel: str, time: datetime, client: WebClient, metadata: object = None):
     """
         Sends a message to everyone in a channel.
 
@@ -116,7 +116,8 @@ def schedule_message_to_everyone_in_channel(message: str, channel: str, time: da
     users = get_channel_users(channel, client)
     messages = []
     for user in users:
-        messages.append(send_scheduled_message(message, user, time, client))
+        messages.append(send_scheduled_message(
+            message, user, time, client, metadata=metadata))
     return messages
 
 

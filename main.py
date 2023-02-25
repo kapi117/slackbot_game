@@ -39,6 +39,7 @@ logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG, encoding="utf-8",
 # Game
 GAME_FILE = "saved/game_save"
 game = game_utils.Game.load_from_pickle(GAME_FILE)
+game.set_client(app.client)
 
 # App home
 with open("modals/app_home.txt", "r", encoding="utf-8") as f:
@@ -52,6 +53,10 @@ with open("modals/add_task.txt", "r", encoding="utf-8") as f:
 SEND_MESSAGE_ID = "send_message_modal"
 with open("modals/send_message.txt", "r", encoding="utf-8") as f:
     SEND_MESSAGE_VIEW = f.read()
+
+SHOW_TASKS_ID = "show_tasks_modal"
+
+SHOW_PLAYERS_ID = "show_players_modal"
 
 # IDs in modals
 BLOCK_CHANNEL_ID = "channel_to_send"
@@ -93,6 +98,11 @@ def open_modal(modal_id, trigger_id, client):
             trigger_id=trigger_id,
             view=SEND_MESSAGE_VIEW
         )
+    elif modal_id == SHOW_TASKS_ID:
+        client.views_open(
+            trigger_id=trigger_id,
+            view=game.generate_tasks_view()
+        )
 
 # Events
 
@@ -130,7 +140,7 @@ def app_home_opened(client, event):
 
 
 @app.event("message")
-def message_im(payload, say, client):
+def message_im(payload, client):
     """
         Handles a direct message to the bot.
     """
@@ -152,6 +162,18 @@ def message_im(payload, say, client):
         thread_ts = payload["thread_ts"]
         is_thread = True
 
+    # TODO if metadata present, if so save task_no
+    task_no = None
+    if is_thread:
+        result = client.conversations_history(channel=channel)
+        print(result)
+        conversation_history = result["messages"]
+        for text in conversation_history:
+            if text["ts"] == thread_ts and "metadata" in text:
+                task_no = int(text["metadata"]["event_type"])
+                print(task_no)
+                break
+
     logging.debug("[MSG] Message: {}, user: {}, channel: {}, thread_ts: {}, is_thread: {}".format(
         message, user, channel, thread_ts, is_thread))
 
@@ -159,9 +181,9 @@ def message_im(payload, say, client):
     if channel[0] == "D":
         logging.debug("[MSG] Message is a DM")
         try:
-            words = message.split(" ")
-            if user in ADMIN_USER_IDS and words[0].lower() == "odin":
+            if " " in message and user in ADMIN_USER_IDS and message.split(" ")[0].lower() == "odin":
                 # Handle too few words
+                words = message.split(" ")
                 if len(words) == 1:
                     slack_utils.send_message(
                         "To check available commands type `odin help`",
@@ -249,6 +271,9 @@ def message_im(payload, say, client):
                         pass
                     elif words[1] == "add_task":
                         open_modal(ADD_TASK_ID, trigger_id, client)
+            else:
+                print("Not admin")
+                game.handle_message(message, user, channel, task_no, thread_ts)
         except Exception as e:
             slack_utils.send_ephemeral_message(
                 "There was an error :(", channel, user, client, thread_ts=thread_ts)
@@ -339,18 +364,49 @@ def add_task_submission(body, client, ack):
 
     # Get correct answers
     correct_answers = body["view"]["state"]["values"][BLOCK_CORRECT_ANSWER_ID][SELECTED_CORRECT_ANSWER_ID]["value"]
-
+    if(correct_answers == ""):
+        correct_answers = []
+    elif ";" in correct_answers:
+        correct_answers = correct_answers.split(";")
+    else:
+        correct_answers = [correct_answers]
     # Get needed task
-    needed_task = body["view"]["state"]["values"][BLOCK_NEEDED_TASK_ID][SELECTED_NEEDED_TASK_ID]["value"]
+
+    if "value" in body["view"]["state"]["values"][BLOCK_NEEDED_TASK_ID][SELECTED_NEEDED_TASK_ID]:
+        needed_task = int(body["view"]["state"]["values"]
+                          [BLOCK_NEEDED_TASK_ID][SELECTED_NEEDED_TASK_ID]["value"])
+    else:
+        needed_task = None
 
     logging.debug("[ADD_TASK] Extracted data: " + str(channels) + " " + str(date) + " " + message +
-                  " " + task_type + " " + task_points + " " + str(case_sensitive) + " " + correct_answers + " " + str(needed_task))
+                  " " + task_type + " " + task_points + " " + str(case_sensitive) + " " + str(correct_answers) + " " + str(needed_task))
 
-    # TODO create task and add it to the game and send it
-    task = game_utils.Task(task_no=len(game.tasks), is_dm=(task_type == "dm"), points=task_points,
-                           case_sensitive=case_sensitive, correct_answers=correct_answers, message=message)
+    task = game_utils.Task(task_no=len(game.tasks.keys()), points=task_points, correct_answers=correct_answers, needed_task=needed_task, is_dm=(
+        task_type == "dm"), channel=channels[0], description=message, do_letters_case_matter=case_sensitive, date_and_time=datetime.datetime.fromtimestamp(date))
 
+    if needed_task is None:
+        task.schedule_task(client)
+
+    game.add_task(task)
+    game.save_to_pickle(GAME_FILE)
+
+
+# TODO Summaries
+"""
+    test:
+        random
+        task needed
+    check if saves
+    players summary modal
+    open players summary modal
+    handle players summary submission
+    same with task
+    to admin accept someones task (game.complete players task)
+"""
 
 # Start the app
 if __name__ == "__main__":
-    handler.start()
+    try:
+        handler.start()
+    finally:
+        game.save_to_pickle(GAME_FILE)
