@@ -29,7 +29,7 @@ handler = SocketModeHandler(app, os.environ.get("APP_TOKEN"))
 
 # Constants
 ASGARD_CHANNEL = "C04P6595G5S"
-ADMIN_USER_IDS = []  # "U03AECYM5MZ"]
+ADMIN_USER_IDS = ["U03AECYM5MZ"]
 
 # Logging
 LOG_FILE = "logs/logs.log"
@@ -60,6 +60,10 @@ SHOW_PLAYERS_ID = "show_players_modal"
 
 LEADERBOARD_ID = "leaderboard_modal"
 
+ACCEPT_TASK_ID = "accept_task_modal"
+with open("modals/accept_task.txt", "r", encoding="utf-8") as f:
+    ACCEPT_TASK_VIEW = f.read()
+
 # IDs in modals
 BLOCK_CHANNEL_ID = "channel_to_send"
 SELECTED_CHANNEL_ID = "select_channel"
@@ -84,6 +88,12 @@ SELECTED_CASE_SENSITIVE_ID = "select_case_sensitive"
 
 BLOCK_NEEDED_TASK_ID = "needed_task"
 SELECTED_NEEDED_TASK_ID = "select_needed_task"
+
+BLOCK_TASK_ACCEPT_USER_ID = "task_accept_user_select"
+SELECTED_TASK_ACCEPT_USER_ID = "select_task_accept_user"
+
+BLOCK_TASK_ACCEPT_ID = "task_accept_select"
+SELECTED_TASK_ACCEPT_ID = "select_task_accept"
 
 
 def open_modal(modal_id, trigger_id, client):
@@ -114,6 +124,13 @@ def open_modal(modal_id, trigger_id, client):
         client.views_open(
             trigger_id=trigger_id,
             view=game.generate_leaderboard_view()
+        )
+    elif modal_id == ACCEPT_TASK_ID:
+        accept_view = ACCEPT_TASK_VIEW.replace(
+            "{{tasks}}", game.generate_tasks_list())
+        client.views_open(
+            trigger_id=trigger_id,
+            view=accept_view
         )
 # Events
 
@@ -409,11 +426,32 @@ def add_task_submission(body, client, ack):
     game.save_to_pickle(GAME_FILE)
 
 
+@app.view(ACCEPT_TASK_ID)
+def accept_task_submission(body, client, ack):
+    """
+        Handles the submission of the accept task modal
+    """
+    # Acknowledge the request
+    ack()
+    logging.debug("[ACCEPT_TASK] Received submission: " + str(body))
+
+    # Get the task
+    task = int(body["view"]["state"]["values"][BLOCK_TASK_ACCEPT_ID]
+               [SELECTED_TASK_ACCEPT_ID]["selected_option"]["value"])
+
+    # Get the users
+    users_to_accept = body["view"]["state"]["values"][BLOCK_TASK_ACCEPT_USER_ID][
+        SELECTED_TASK_ACCEPT_USER_ID]["selected_conversations"]
+
+    for user in users_to_accept:
+        logging.debug("[ACCEPT_TASK] Accepting task " +
+                      str(task) + " for user " + user)
+        game.complete_task_of_player(user, task)
+
+
 # TODO Summaries
 """
-    handle players summary submission
-    to admin accept someones task (game.complete players task)
-    player can see players summary
+    
 """
 
 # Start the app

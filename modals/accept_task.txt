@@ -1,0 +1,58 @@
+{
+	"type": "modal",
+    "callback_id": "accept_task_modal",
+	"title": {
+		"type": "plain_text",
+		"text": "Zalicz zadanie",
+		"emoji": true
+	},
+	"submit": {
+		"type": "plain_text",
+		"text": "Submit",
+		"emoji": true
+	},
+	"close": {
+		"type": "plain_text",
+		"text": "Cancel",
+		"emoji": true
+	},
+	"blocks": [
+		{
+			"type": "section",
+            "block_id": "task_accept_user_select",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Wybierz komu zaliczyć zadanie"
+			},
+			"accessory": {
+				"type": "multi_conversations_select",
+				"placeholder": {
+					"type": "plain_text",
+					"text": "Select conversations",
+					"emoji": true
+				},
+				"action_id": "select_task_accept_user"
+			}
+		},
+		{
+			"type": "section",
+            "block_id": "task_accept_select",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Wybierz zadanie z listy"
+			},
+			"accessory": {
+				"type": "static_select",
+				"placeholder": {
+					"type": "plain_text",
+					"text": "Select an item",
+					"emoji": true
+				},
+				"options": [
+					{{tasks}}
+				],
+				"action_id": "select_task_accept"
+			}
+		}
+	]
+}

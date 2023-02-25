@@ -415,11 +415,13 @@ class Game:
         return ',\n '.join([str(task) for task in self.tasks.values()])
 
     def complete_task_of_player(self, user_id: str, task_no: int):
-        self.players[user_id].right_answer(self.tasks[task_no])
-        if task_no in self.needed_task:
-            self.tasks[self.needed_task[task_no]
-                       ].send_task(user_id, self.client)
-        logging.info('Task completed: ' + str(task_no) + ' by ' + str(user_id))
+        if not task_no in self.players[user_id].completed_tasks:
+            self.players[user_id].right_answer(self.tasks[task_no])
+            if task_no in self.needed_task:
+                self.tasks[self.needed_task[task_no]
+                           ].send_task(user_id, self.client)
+            logging.info('Task completed: ' +
+                         str(task_no) + ' by ' + str(user_id))
 
     def handle_message(self, message: str, user_id: str, channel: str, task_no: Optional[int] = None, thread_ts: Optional[str] = None):
         """
@@ -507,6 +509,35 @@ class Game:
                     }
                 '''
         view += "]}"
+        return view
+
+    def generate_tasks_list(self) -> str:
+        view = ''
+        first = True
+        for task_no, task in self.tasks.items():
+            if not first:
+                view += '''
+                    ,{
+						"text": {
+							"type": "plain_text",
+							"text": "Task: ''' + str(task_no) + '''",
+							"emoji": true
+						},
+						"value": "''' + str(task_no) + '''"
+					}
+                '''
+            else:
+                first = False
+                view += '''
+                    {
+						"text": {
+							"type": "plain_text",
+							"text": "Task: ''' + str(task_no) + '''",
+							"emoji": true
+						},
+						"value": "''' + str(task_no) + '''"
+					}
+                '''
         return view
 
     def generate_players_view(self) -> str:

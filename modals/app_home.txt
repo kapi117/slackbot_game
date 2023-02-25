@@ -75,6 +75,21 @@
 					"action_id": "app_home_buttons"
 				}
 			]
+		},
+		{
+			"type": "actions",
+			"elements": [
+				{
+					"type": "button",
+					"text": {
+						"type": "plain_text",
+						"text": "Zalicz zadanie",
+						"emoji": true
+					},
+					"value": "accept_task_modal",
+					"action_id": "app_home_buttons"
+				}
+			]
 		}
 	]
 }
