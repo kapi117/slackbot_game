@@ -29,7 +29,7 @@ handler = SocketModeHandler(app, os.environ.get("APP_TOKEN"))
 
 # Constants
 ASGARD_CHANNEL = "C04P6595G5S"
-ADMIN_USER_IDS = ["U03AECYM5MZ"]
+ADMIN_USER_IDS = []  # "U03AECYM5MZ"]
 
 # Logging
 LOG_FILE = "logs/logs.log"
@@ -57,6 +57,8 @@ with open("modals/send_message.txt", "r", encoding="utf-8") as f:
 SHOW_TASKS_ID = "show_tasks_modal"
 
 SHOW_PLAYERS_ID = "show_players_modal"
+
+LEADERBOARD_ID = "leaderboard_modal"
 
 # IDs in modals
 BLOCK_CHANNEL_ID = "channel_to_send"
@@ -103,7 +105,16 @@ def open_modal(modal_id, trigger_id, client):
             trigger_id=trigger_id,
             view=game.generate_tasks_view()
         )
-
+    elif modal_id == SHOW_PLAYERS_ID:
+        client.views_open(
+            trigger_id=trigger_id,
+            view=game.generate_players_view()
+        )
+    elif modal_id == LEADERBOARD_ID:
+        client.views_open(
+            trigger_id=trigger_id,
+            view=game.generate_leaderboard_view()
+        )
 # Events
 
 
@@ -124,18 +135,26 @@ def app_home_opened(client, event):
     else:
         client.views_publish(
             user_id=event["user"],
-            view={
+            view='''{
                 "type": "home",
                 "blocks": [
                     {
-                        "type": "section",
-                        "text": {
-                            "type": "mrkdwn",
-                            "text": " *You are not an admin* "
-                        }
+                        "type": "actions",
+                        "elements": [
+                            {
+                                "type": "button",
+                                "text": {
+                                    "type": "plain_text",
+                                    "text": "Pokaż wyniki wojowników",
+                                    "emoji": true
+                                },
+                                "value": "leaderboard_modal",
+                                "action_id": "app_home_buttons"
+                            }
+                        ]
                     }
                 ]
-            }
+            }'''
         )
 
 
@@ -162,11 +181,9 @@ def message_im(payload, client):
         thread_ts = payload["thread_ts"]
         is_thread = True
 
-    # TODO if metadata present, if so save task_no
     task_no = None
     if is_thread:
         result = client.conversations_history(channel=channel)
-        print(result)
         conversation_history = result["messages"]
         for text in conversation_history:
             if text["ts"] == thread_ts and "metadata" in text:
@@ -270,7 +287,7 @@ def message_im(payload, client):
                         # TODO show players and points
                         pass
                     elif words[1] == "add_task":
-                        open_modal(ADD_TASK_ID, trigger_id, client)
+                        pass
             else:
                 print("Not admin")
                 game.handle_message(message, user, channel, task_no, thread_ts)
@@ -278,6 +295,7 @@ def message_im(payload, client):
             slack_utils.send_ephemeral_message(
                 "There was an error :(", channel, user, client, thread_ts=thread_ts)
             print(e)
+    game.save_to_pickle(GAME_FILE)
 
 
 @app.event("member_joined_channel")
@@ -393,15 +411,9 @@ def add_task_submission(body, client, ack):
 
 # TODO Summaries
 """
-    test:
-        random
-        task needed
-    check if saves
-    players summary modal
-    open players summary modal
     handle players summary submission
-    same with task
     to admin accept someones task (game.complete players task)
+    player can see players summary
 """
 
 # Start the app

@@ -12,75 +12,6 @@ from slack_sdk.web.client import WebClient
 import slack_utils
 import logging
 
-'''
-@startuml
-class Task {
-  +task_no: int
-  +points: int
-  +correct_answers: List[str]
-  +needed_task: int
-  +is_dm: bool
-  +channel: str
-  +date_and_time: datetime
-  +description: str
-  +do_letters_case_matter: bool
-  +solved_by: int = 0
-  +sent_messages: List[int]
-
-
-  + {static} create_task_from_modal() : Task
-  +__init__(task_no: int, points: int, correct_answers: List[str], needed_task: Optional[int] = None, is_dm: bool = False, channel: str = None, date_and_time: datetime = None, description: str = None, do_letters_case_matter: bool = False)
-  +schedule_task()
-  +send_task(user_id: str)
-  +edit_task(**kwargs)
-  +update_message()
-  +delete_message()
-  +__str__() : str
-  +check_answer(message: str) : bool
-}
-
-class Player {
-  +user_id: str
-  +points: int = 0
-  +completed_tasks: Set[int]
-  +standings: Dict[int, int]
-  +wrong_answers: Dict[int, int]
-  
-  +__init__(user_id: str)
-  +right_answer(task_no: int)
-  +wrong_answer(task_no: int)
-  
-}
-
-enum MessageType {
-  +RIGHT_ANSWER
-  +WRONG_ANSWER
-  +OUTER_MESSAGE
-  +ADMIN_MESSAGE
-}
-
-class Game {
-  +players: Dict[str, Player]
-  +tasks: Dict[int, Task]
-  +needed_tasks: Dict[int, int]
-  +{static} QUOTES: List[str]
-  +{static} INCORRECT_REPLIES: List[str]
-  +{static} CORRECT_REPLIES: List[str]
-
-  +add_task(task_no: int, points: int, correct_answer: str, needed_task: int)
-  +edit_task(task_no: int, **kwargs)
-  +delete_task(task_no: int)
-  +show_tasks() : str
-  +add_player(user_id: str)
-  +show_players() : str
-  +handle_message(message: str, parent_message: str) : MessageType
-
-  +{static} save_to_pickle(game: Game, filename: str)
-  +{static} load_from_pickle(filename: str) : Game
-}
-@enduml
-'''
-
 
 class Task:
     """
@@ -133,7 +64,8 @@ class Task:
         self.is_dm = is_dm
         self.channel = channel
         self.date_and_time = date_and_time
-        self.description = description
+        # Add the task number and points to the description.
+        self.description = f'[ZADANIE #{task_no} warte {points} punktów]\n' + description
         self.do_letters_case_matter = do_letters_case_matter
         self.solved_by = 0
         self.sent_messages = []
@@ -570,6 +502,98 @@ class Game:
                             {
                                 "type": "mrkdwn",
                                 "text": "''' + str(task) + '''"
+                            }
+                        ]
+                    }
+                '''
+        view += "]}"
+        return view
+
+    def generate_players_view(self) -> str:
+        view = '''{
+            "title": {
+                "type": "plain_text",
+                "text": "Podsumowanie ludzi",
+                "emoji": true
+            },
+            "type": "modal",
+            "close": {
+                "type": "plain_text",
+                "text": "Zamknij",
+                "emoji": true
+            },
+            "blocks": [
+                '''
+        first = True
+        for user_id, player in self.players.items():
+            if not first:
+                view += '''
+                    ,{
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "''' + str(player) + '''"
+                            }
+                        ]
+                    }
+                '''
+            else:
+                first = False
+                view += '''
+                    {
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "''' + str(player) + '''"
+                            }
+                        ]
+                    }
+                '''
+        view += "]}"
+        return view
+
+    def generate_leaderboard_view(self) -> str:
+        view = '''{
+            "title": {
+                "type": "plain_text",
+                "text": "Leaderboard",
+                "emoji": true
+            },
+            "type": "modal",
+            "close": {
+                "type": "plain_text",
+                "text": "Zamknij",
+                "emoji": true
+            },
+            "blocks": [
+                '''
+        first = True
+        for user_id, player in self.players.items():
+            player_line = "<@" + user_id + "> - " + \
+                str(player.points) + " pkt."
+            if not first:
+                view += '''
+                    ,{
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "''' + player_line + '''"
+                            }
+                        ]
+                    }
+                '''
+            else:
+                first = False
+                view += '''
+                    {
+                        "type": "context",
+                        "elements": [
+                            {
+                                "type": "mrkdwn",
+                                "text": "''' + player_line + '''"
                             }
                         ]
                     }
