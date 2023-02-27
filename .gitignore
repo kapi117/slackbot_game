@@ -130,3 +130,9 @@ dmypy.json
 
 # ignore .env file
 .env
+
+# ignore .vscode folder
+.vscode
+
+# ignore saved folder
+saved

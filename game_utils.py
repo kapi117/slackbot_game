@@ -240,7 +240,7 @@ class Player:
             Returns:
                 The string representation of the player.
         """
-        return f"{self.user_id} - {self.points} points - {self.completed_tasks} completed tasks - {self.wrong_answers} wrong answers - {self.standings} standings"
+        return f"<@{self.user_id}> - {self.points} points - {self.completed_tasks} completed tasks - {self.wrong_answers} wrong answers - {self.standings} standings"
 
 
 class MessageType(Enum):
@@ -323,8 +323,9 @@ class Game:
         """
         # If the file already exists, rename it (make backup).
         if os.path.exists(file_name):
-            os.rename(file_name, file_name +
-                      datetime.now().strftime("%d_%m_%y__%H_%M_%S") + '.bak')
+            if os.path.exists(file_name + '.bak'):
+                os.remove(file_name + '.bak')
+            os.rename(file_name, file_name + '.bak')
 
         with open(file_name, 'wb') as f:
             pickle.dump(self, f)

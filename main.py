@@ -332,7 +332,7 @@ def member_joined_channel(payload, say, client):
         # Send the message
         message = "Przekroczyłeś Bifrost, witamy w Asgardzie <@"+user+">!"
         client.chat_postEphemeral(
-            channel=channel, text=message, user=user, username="Hajmdal", icon_url="https://static.wikia.nocookie.net/m__/images/a/a5/Heimdall.PNG/revision/latest?cb=20200924165806&path-prefix=marvel%2Fpl")
+            channel=channel, text=message, user=user, username="Hajmdal", icon_url="https://fwcdn.pl/cpo/05/85/585/332.4.jpg")
         game.add_player(user)
         for task_no, task in game.tasks.items():
             if task.date_and_time < datetime.datetime.now():
@@ -429,6 +429,10 @@ def add_task_submission(body, client, ack):
     if needed_task is None:
         task.schedule_task(
             client, slack_utils.get_channel_users(ASGARD_CHANNEL, client))
+    else:
+        for player_id, player in game.players.items():
+            if needed_task in player.completed_tasks:
+                task.send_task(player_id, client)
 
     game.add_task(task)
     game.save_to_pickle(GAME_FILE)
