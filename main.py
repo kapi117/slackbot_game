@@ -18,7 +18,8 @@ import datetime
 import logging
 
 # Load .env file
-env_path = Path('.') / '.env'
+# env_path = Path('.') / '.env'
+env_path = Path('.') / '.env_hack'
 load_dotenv(dotenv_path=env_path)
 
 # Initialize app
@@ -28,9 +29,11 @@ app = App(token=os.environ.get("BOT_TOKEN"))
 handler = SocketModeHandler(app, os.environ.get("APP_TOKEN"))
 
 # Constants
-ASGARD_CHANNEL = "C04P6595G5S"
-ADMIN_USER_IDS = ["U03AECYM5MZ"]
+# ASGARD_CHANNEL = "C04P6595G5S"
+# ADMIN_USER_IDS = ["U03AECYM5MZ"]
 
+ASGARD_CHANNEL = "C04R72PD37G"
+ADMIN_USER_IDS = ["U042CQW7GCE"]
 # Logging
 LOG_FILE = "logs/logs.log"
 logging.basicConfig(filename=LOG_FILE, level=logging.DEBUG, encoding="utf-8",
@@ -406,7 +409,7 @@ def add_task_submission(body, client, ack):
 
     # Get correct answers
     correct_answers = body["view"]["state"]["values"][BLOCK_CORRECT_ANSWER_ID][SELECTED_CORRECT_ANSWER_ID]["value"]
-    if(correct_answers == ""):
+    if correct_answers == "" or correct_answers is None:
         correct_answers = []
     elif ";" in correct_answers:
         correct_answers = correct_answers.split(";")

@@ -423,6 +423,8 @@ class Game:
                            ].send_task(user_id, self.client)
             logging.info('Task completed: ' +
                          str(task_no) + ' by ' + str(user_id))
+            slack_utils.send_message(
+                'Gratulacje, zaliczyłeś zadanie ' + str(task_no) + '!', [user_id], self.client)
 
     def handle_message(self, message: str, user_id: str, channel: str, task_no: Optional[int] = None, thread_ts: Optional[str] = None):
         """
@@ -449,7 +451,7 @@ class Game:
                 logging.info('Right answer')
                 self.players[user_id].right_answer(self.tasks[task_no])
                 slack_utils.send_message(self.CORRECT_ANSWER_MESSAGES[random.randint(
-                    0, len(self.CORRECT_ANSWER_MESSAGES)-1)], [channel], self.client, thread_ts=[thread_ts])
+                    0, len(self.CORRECT_ANSWER_MESSAGES)-1)] + f"\nUkończyłeś zadanie jako #{self.players[user_id].standings[task_no]}, wszystkie punkty: {self.players[user_id].points}", [channel], self.client, thread_ts=[thread_ts])
                 if task_no in self.needed_task:
                     logging.info('Sending needed task')
                     self.tasks[self.needed_task[task_no]
