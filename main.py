@@ -111,10 +111,11 @@ def open_modal(modal_id, trigger_id, client):
             view=SEND_MESSAGE_VIEW
         )
     elif modal_id == SHOW_TASKS_ID:
+        view = game.generate_tasks_view()
+        logging.info("[OPEN_MODAL] " + str(view))
         client.views_open(
             trigger_id=trigger_id,
-            view=game.generate_tasks_view()
-        )
+            view=view)
     elif modal_id == SHOW_PLAYERS_ID:
         client.views_open(
             trigger_id=trigger_id,
@@ -333,6 +334,12 @@ def member_joined_channel(payload, say, client):
         client.chat_postEphemeral(
             channel=channel, text=message, user=user, username="Hajmdal", icon_url="https://static.wikia.nocookie.net/m__/images/a/a5/Heimdall.PNG/revision/latest?cb=20200924165806&path-prefix=marvel%2Fpl")
         game.add_player(user)
+        for task_no, task in game.tasks.items():
+            if task.date_and_time < datetime.datetime.now():
+                task.send_task(user, client)
+            else:
+                task.schedule_task(client, [user])
+
         game.save_to_pickle(GAME_FILE)
 
 
@@ -420,7 +427,8 @@ def add_task_submission(body, client, ack):
         task_type == "dm"), channel=channels[0], description=message, do_letters_case_matter=case_sensitive, date_and_time=datetime.datetime.fromtimestamp(date))
 
     if needed_task is None:
-        task.schedule_task(client)
+        task.schedule_task(
+            client, slack_utils.get_channel_users(ASGARD_CHANNEL, client))
 
     game.add_task(task)
     game.save_to_pickle(GAME_FILE)
@@ -451,7 +459,9 @@ def accept_task_submission(body, client, ack):
 
 # TODO Summaries
 """
-    
+    check everything from beginning as if it was for real
+    configure hacknarok slack
+    send task if someone joined channel late
 """
 
 # Start the app

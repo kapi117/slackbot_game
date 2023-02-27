@@ -65,7 +65,7 @@ class Task:
         self.channel = channel
         self.date_and_time = date_and_time
         # Add the task number and points to the description.
-        self.description = f'[ZADANIE #{task_no} warte {points} punktów]\n' + description
+        self.description = f'[ZADANIE #{task_no} Punkty: {points}]\n' + description
         self.do_letters_case_matter = do_letters_case_matter
         self.solved_by = 0
         self.sent_messages = []
@@ -503,7 +503,7 @@ class Game:
                         "elements": [
                             {
                                 "type": "mrkdwn",
-                                "text": "''' + str(task) + '''"
+                                "text": "''' + str(task).replace("\n", r"\n").replace("\"", "'") + '''"
                             }
                         ]
                     }
