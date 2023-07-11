@@ -1,6 +1,23 @@
-# SlackBot for game for EESTEC members
+# 🕹️ SlackBot Game
 
 As a part of internal EESTEC game, aimed to give fun, learn new things and make people engaged with Hacknarok, we created a game bot for Slack. This bot is used to give tasks, check if they are done, give points and so on.
+
+It has been themed as a game, where nordic god Odin asks you for help with several tasks, more or less related to Hacknarok and Norse mythology.
+
+## 📝 Features
+
+-   Creating tasks
+-   Sending messages to global channel
+-   Sending direct messsages with tasks to participants
+-   Checking if tasks are done, responding in funny way
+-   Giving points for tasks
+-   Showing leaderboard
+-   Showing statistics
+-   Sending tasks only if previous one is done
+
+## 📷 Screenshots
+
+![](./imgs/admin_page.png) ![](./imgs/task_publish.png) ![](./imgs/send_message.png)
 
 # Initial configuration of bot
 
@@ -8,22 +25,22 @@ As a part of internal EESTEC game, aimed to give fun, learn new things and make 
 2. Click _Create New App_
 3. Fill in the name of the app and select the workspace
 4. Go to _OAuth & Permissions_ and add the following scopes:
-   - app_mentions:read
-   - channels:history
-   - channels:read
-   - chat:write
-   - chat:write.customize
-   - emoji:read
-   - files:read
-   - files:write
-   - im:history
-   - im:read
-   - im:write
-   - reactions:read
-   - reactions:write
-   - channels:read
-   - users:read
-   - users:write
+    - app_mentions:read
+    - channels:history
+    - channels:read
+    - chat:write
+    - chat:write.customize
+    - emoji:read
+    - files:read
+    - files:write
+    - im:history
+    - im:read
+    - im:write
+    - reactions:read
+    - reactions:write
+    - channels:read
+    - users:read
+    - users:write
 5. Go to _Socket Mode_ and enable it
 6. Go to _App Home_ and set nice _Default Name_, tick _Allow users to send Slash commands and messages from the messages tab_, enable _Home Tab_
 7. Go to _Incoming Webhooks_ and enable it, then click _Add New Webhook to Workspace_
