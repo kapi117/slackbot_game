@@ -136,3 +136,6 @@ dmypy.json
 
 # ignore saved folder
 saved
+
+# ignore logs
+logs
